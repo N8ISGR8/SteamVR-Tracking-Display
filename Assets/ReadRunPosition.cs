@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using System;
 using System.IO;
-using System.Diagnostics;
+using UnityEngine.UI;
 
 public class ReadRunPosition : MonoBehaviour
 {
@@ -13,32 +13,91 @@ public class ReadRunPosition : MonoBehaviour
     StreamWriter writer;
     StreamReader reader;
     public string host = "127.0.0.1";
-    public Int32 port = 32779;
+    public int port = 32779;
+
+    //random
+    public Toggle isOn;
+    public static ReadRunPosition instance;
+    public GameObject restartDashUI;
+    public GameObject regularUI;
+    private bool dashSetup = false;
+    public Button runButton;
+    private bool uiOpen;
 
     //vr tracking
-    private bool readPositions = false;
+    public bool readPositions = false;
     private bool setup = false;
     private GameObject hmd;
     private GameObject lCon;
     private GameObject rCon;
 
+
+    public void OpenDash()
+    {
+        if (!dashSetup)
+        {
+            dashSetup = true;
+            restartDashUI.SetActive(false);
+            regularUI.SetActive(true);
+        }
+        Debug.Log("OPEN UI");
+        uiOpen = true;
+    }
+
+    public void CloseDash()
+    {
+        uiOpen = false;
+    }
+
+    private void Awake()
+    {
+        instance = this;
+    }
+
+    public void RunNoClick()
+    {
+        Debug.Log("RUN CLICK");
+        Run();
+    }
+
+    public void RunClick()
+    {
+        if (uiOpen)
+        {
+            Run();
+        }
+    }
+
     public void Run()
     {
+        Debug.Log("RUN");
         Unity_SteamVR_Handler handler = FindObjectOfType<Unity_SteamVR_Handler>();
         hmd = handler.hmdObject;
         lCon = handler.leftTrackerObj;
         rCon = handler.rightTrackerObj;
         readPositions = !readPositions;
+        isOn.isOn = readPositions;
+    }
+
+    public void Setup()
+    {
+        setup = true;
+        Unity_SteamVR_Handler handler = FindObjectOfType<Unity_SteamVR_Handler>();
+        hmd = handler.hmdObject;
+        lCon = handler.leftTrackerObj;
+        rCon = handler.rightTrackerObj;
+        SetPosition.instance.Run();
+        SetupSocket();
     }
 
     private void Update()
     {
-        if(readPositions)
+        if (readPositions)
         {
+            Debug.Log("read position");
             if(!setup)
             {
-                SetupSocket();
-                setup = true;
+                Setup();
             }
             string objs = GetVRObj(hmd).ToString() + "/" + GetVRObj(lCon).ToString() + "/" + GetVRObj(rCon).ToString();
             WriteSocket(objs);

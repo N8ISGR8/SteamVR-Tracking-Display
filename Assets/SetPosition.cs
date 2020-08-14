@@ -16,27 +16,34 @@ public class SetPosition : MonoBehaviour
     private float[] rPoses;
     private float[] hPoses;
 
-    private void Start()
+    private void Awake()
     {
-        lCon = Instantiate(lConPrefab, trackingParent);
-        rCon = Instantiate(rConPrefab, trackingParent);
-        hmd = Instantiate(hmdPrefab, trackingParent);
+        instance = this;
+    }
+
+    public void Run()
+    {
+        lCon = Instantiate(lConPrefab, new Vector3(0,-2000,0), Quaternion.identity, trackingParent);
+        rCon = Instantiate(rConPrefab, new Vector3(0, -2000, 0), Quaternion.identity, trackingParent);
+        hmd = Instantiate(hmdPrefab, new Vector3(0, -2000, 0), Quaternion.identity, trackingParent);
         lPoses = new float[6];
         rPoses = new float[6];
         hPoses = new float[6];
-        instance = this;
         Thread t = new Thread(new ThreadStart(ReadPosition.Start));
         t.Start();
     }
 
     private void Update()
     {
-        lCon.transform.localPosition = new Vector3(lPoses[0], lPoses[1], lPoses[2]);
-        rCon.transform.localPosition = new Vector3(rPoses[0], rPoses[1], rPoses[2]);
-        hmd.transform.localPosition = new Vector3(hPoses[0], hPoses[1], hPoses[2]);
-        lCon.transform.localRotation = Quaternion.Euler(lPoses[3], lPoses[4], lPoses[5]);
-        rCon.transform.localRotation = Quaternion.Euler(rPoses[3], rPoses[4], rPoses[5]);
-        hmd.transform.localRotation = Quaternion.Euler(hPoses[3], hPoses[4], hPoses[5]);
+        if (lPoses != null)
+        {
+            lCon.transform.localPosition = new Vector3(lPoses[0], lPoses[1], lPoses[2]);
+            rCon.transform.localPosition = new Vector3(rPoses[0], rPoses[1], rPoses[2]);
+            hmd.transform.localPosition = new Vector3(hPoses[0], hPoses[1], hPoses[2]);
+            lCon.transform.localRotation = Quaternion.Euler(lPoses[3], lPoses[4], lPoses[5]);
+            rCon.transform.localRotation = Quaternion.Euler(rPoses[3], rPoses[4], rPoses[5]);
+            hmd.transform.localRotation = Quaternion.Euler(hPoses[3], hPoses[4], hPoses[5]);
+        }
     }
 
     public void Deserialize(string s)
